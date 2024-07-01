@@ -1,26 +1,42 @@
-// HomeScreen.js
-
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, StatusBar, ActivityIndicator, FlatList, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, StatusBar, ActivityIndicator, FlatList, Dimensions,TouchableOpacity } from 'react-native';
 import { Card, Button, IconButton } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons';
 import * as Location from 'expo-location';
-import { createStackNavigator } from '@react-navigation/stack';
-import ForecastScreen from './ForecastScreen';
 
-const Stack = createStackNavigator();
 const { height } = Dimensions.get('window');
 
-function HomeScreen({ navigation }) {
+function HomeScreen({ route, navigation }) {
+  const { city } = route.params || {}; // Get the city name from route parameters, if any
   const [isLoading, setIsLoading] = useState(false);
   const [weatherData, setWeatherData] = useState(null);
   const [forecastData, setForecastData] = useState(null);
 
   useEffect(() => {
-    fetchWeatherData(); // Fetch weather data on initial load
-  }, []);
+    if (city) {
+      fetchWeatherDataByCity(city);
+    } else {
+      fetchWeatherDataByLocation();
+    }
+  }, [city]);
 
-  const fetchWeatherData = async () => {
+  const fetchWeatherDataByCity = async (city) => {
+    setIsLoading(true);
+    try {
+      const response = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=6b54496a93f3671ad472a9370f69f850`);
+      const weatherData = await response.json();
+      setWeatherData(weatherData);
+
+      const response2 = await fetch(`https://api.openweathermap.org/data/2.5/forecast?q=${city}&appid=6b54496a93f3671ad472a9370f69f850`);
+      const forecastData = await response2.json();
+      setForecastData(forecastData.list);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+    setIsLoading(false);
+  };
+
+  const fetchWeatherDataByLocation = async () => {
     setIsLoading(true);
     try {
       let { status } = await Location.requestForegroundPermissionsAsync();
@@ -38,7 +54,6 @@ function HomeScreen({ navigation }) {
       const response2 = await fetch(`https://api.openweathermap.org/data/2.5/forecast?lat=${latitude}&lon=${longitude}&appid=6b54496a93f3671ad472a9370f69f850`);
       const forecastData = await response2.json();
       setForecastData(forecastData.list);
-
     } catch (error) {
       console.error('Error fetching data:', error);
     }
@@ -58,23 +73,29 @@ function HomeScreen({ navigation }) {
       ]
     : [];
 
+  const locationWords = weatherData ? weatherData.name.split(' ') : [];
+  const locationTop = locationWords.length > 1 ? '5%' : '10%';
+
   return (
     <View style={styles.container}>
       <StatusBar style="auto" />
-      {/* Refresh icon button */}
+      <TouchableOpacity onPress={() => navigation.goBack()} style={styles.goBackButton}>
+        <Ionicons name="arrow-back" size={24} color="white" />
+      </TouchableOpacity>
+
       <IconButton
         icon="refresh"
         color="#ffffff"
         size={30}
         style={styles.refreshButton}
-        onPress={fetchWeatherData}
+        onPress={() => (city ? fetchWeatherDataByCity(city) : fetchWeatherDataByLocation())}
       />
       {isLoading ? (
         <ActivityIndicator size="large" color="#0000ff" />
       ) : (
         weatherData && (
           <>
-            <Text style={styles.locationText}>{weatherData.name}</Text>
+            <Text style={[styles.locationText, { top: locationTop }]}>{weatherData.name}</Text>
             <Card style={styles.card}>
               <Card.Content>
                 <FlatList
@@ -98,7 +119,7 @@ function HomeScreen({ navigation }) {
                       onPress={() => navigation.navigate('Forecast', { forecastData })}
                       style={styles.button}
                     >
-                      <Text style={styles.ButtonText}>Show 5 Days Prediction</Text>
+                      <Text style={styles.ButtonText}>Show 5 Day Prediction</Text>
                     </Button>
                   )}
                 />
@@ -120,12 +141,14 @@ const styles = StyleSheet.create({
     paddingTop: 50,
   },
   locationText: {
-    fontSize: 50,
+    fontSize: 60,
     fontWeight: 'bold',
     color: 'white',
     position: 'absolute',
-    top: '10%',
     left: '5%',
+    flexWrap: 'wrap',
+    textAlign: 'left',
+    width: '90%',
   },
   card: {
     height: height * 0.75,
@@ -165,8 +188,15 @@ const styles = StyleSheet.create({
   },
   refreshButton: {
     position: 'absolute',
-    top: 10,
+    top: 2,
     right: 10,
+  },
+  goBackButton: {
+    position: 'absolute',
+    top: 10,
+    left: 10,
+    padding: 10,
+    zIndex: 1, // Ensure the button is above other content
   },
 });
 
