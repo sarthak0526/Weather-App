@@ -6,7 +6,7 @@ import HomeScreen from './homescreen';
 import ForecastScreen from './ForecastScreen';
 import SwitchPage from './switchpage'; // Ensure this import matches the component name
 import CityInput from './CityInput'; // Import the CityInput screen
-import WeatherDetails from './WeatherDetails'; // Import the WeatherDetails screen
+import InfoScreen from './InfoScreen';
 
 const Stack = createStackNavigator();
 
@@ -35,9 +35,9 @@ export default function App() {
           options={{ headerShown: false }}
         />
         <Stack.Screen
-          name="WeatherDetails"
-          component={WeatherDetails}
-          options={{ headerShown: false }}
+        name="InfoScreen"
+        component={InfoScreen}
+        options={{headerShown: false}}
         />
       </Stack.Navigator>
     </NavigationContainer>

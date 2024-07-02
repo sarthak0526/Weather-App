@@ -1,27 +1,38 @@
+// SwitchPage.js
+
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { Card } from 'react-native-paper';
+import { Card, IconButton } from 'react-native-paper';
+import { useNavigation } from '@react-navigation/native';
 
-function SwitchPage({ navigation }) {
+function SwitchPage() {
+  const navigation = useNavigation();
+
   return (
     <View style={styles.container}>
+      <Text style={styles.heading}>Weather</Text>
       <Card style={styles.card}>
         <Card.Content>
-          <Text style={styles.title}>Choose Location</Text>
-          <TouchableOpacity
-            style={styles.button}
-            onPress={() => navigation.navigate('Home')}
-          >
+          <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Home')}>
             <Text style={styles.buttonText}>Current Location</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.button}
-            onPress={() => navigation.navigate('CityInput')} // Navigate to CityInput screen
+            onPress={() => navigation.navigate('CityInput')}
           >
             <Text style={styles.buttonText}>Specific Location</Text>
           </TouchableOpacity>
         </Card.Content>
       </Card>
+
+      {/* Info Icon */}
+      <IconButton
+        icon="information-outline"
+        color="#fff"
+        size={30}
+        style={styles.infoIcon}
+        onPress={() => navigation.navigate('InfoScreen')}
+      />
     </View>
   );
 }
@@ -37,29 +48,38 @@ const styles = StyleSheet.create({
     width: '80%',
     padding: 20,
     borderRadius: 10,
-    backgroundColor: '#fff',
+    backgroundColor: 'black',
     elevation: 5,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
   },
-  title: {
-    fontSize: 20,
-    marginBottom: 20,
-    textAlign: 'center',
-  },
   button: {
-    backgroundColor: '#007BFF',
-    paddingVertical: 15,
-    paddingHorizontal: 10,
-    borderRadius: 5,
+    backgroundColor: 'white',
+    paddingVertical: 26,
+    paddingHorizontal: 15,
+    borderRadius: 10,
     marginBottom: 10,
   },
   buttonText: {
-    color: '#fff',
+    color: 'black',
     textAlign: 'center',
-    fontSize: 16,
+    fontSize: 24,
+    fontWeight: 'bold',
+  },
+  heading: {
+    position: 'absolute',
+    top: 25,
+    left: 20,
+    color: '#fff',
+    fontSize: 50,
+    fontWeight: 'bold',
+  },
+  infoIcon: {
+    position: 'absolute',
+    bottom: 20,
+    right: 20,
   },
 });
 

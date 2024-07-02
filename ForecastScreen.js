@@ -37,7 +37,7 @@ export default function ForecastScreen({ route }) {
     <View style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Ionicons name="arrow-back" size={24} color="white" />
+          <Ionicons name="arrow-back" size={28} color="white" />
         </TouchableOpacity>
         <Text style={styles.headerText}>Prediction</Text>
       </View>
@@ -96,7 +96,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   dateHeader: {
-    backgroundColor: '#003366',
+    backgroundColor: 'black',
     borderTopLeftRadius: 5,
     borderTopRightRadius: 5,
     padding: 6,
@@ -110,7 +110,7 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: 'column',
     alignItems: 'flex-start',
-    backgroundColor: '#ADD8E6',
+    backgroundColor: '#A9A9A9',
     borderRadius: 12,
     padding: 10,
     width: 180,

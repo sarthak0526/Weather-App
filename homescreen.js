@@ -1,10 +1,20 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, StatusBar, ActivityIndicator, FlatList, Dimensions,TouchableOpacity } from 'react-native';
-import { Card, Button, IconButton } from 'react-native-paper';
-import { Ionicons } from '@expo/vector-icons';
-import * as Location from 'expo-location';
+import React, { useState, useEffect } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  StatusBar,
+  ActivityIndicator,
+  FlatList,
+  Dimensions,
+  TouchableOpacity,
+  Alert,
+} from "react-native";
+import { Card, Button, IconButton } from "react-native-paper";
+import { Ionicons } from "@expo/vector-icons";
+import * as Location from "expo-location";
 
-const { height } = Dimensions.get('window');
+const { height } = Dimensions.get("window");
 
 function HomeScreen({ route, navigation }) {
   const { city } = route.params || {}; // Get the city name from route parameters, if any
@@ -23,64 +33,136 @@ function HomeScreen({ route, navigation }) {
   const fetchWeatherDataByCity = async (city) => {
     setIsLoading(true);
     try {
-      const response = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=6b54496a93f3671ad472a9370f69f850`);
+      // Fetch current weather data
+      const response = await fetch(
+        `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=6b54496a93f3671ad472a9370f69f850`
+      );
+      if (!response.ok) {
+        if (response.status === 404) {
+          throw new Error('City not found. Please enter a valid city name.');
+        } else {
+          throw new Error('An error occurred while fetching the weather data.');
+        }
+      }
       const weatherData = await response.json();
       setWeatherData(weatherData);
-
-      const response2 = await fetch(`https://api.openweathermap.org/data/2.5/forecast?q=${city}&appid=6b54496a93f3671ad472a9370f69f850`);
+  
+      // Fetch forecast data
+      const response2 = await fetch(
+        `https://api.openweathermap.org/data/2.5/forecast?q=${city}&appid=6b54496a93f3671ad472a9370f69f850`
+      );
+      if (!response2.ok) {
+        if (response2.status === 404) {
+          throw new Error('City not found. Please enter a valid city name.');
+        } else {
+          throw new Error('An error occurred while fetching the forecast data.');
+        }
+      }
       const forecastData = await response2.json();
       setForecastData(forecastData.list);
     } catch (error) {
-      console.error('Error fetching data:', error);
+      Alert.alert(
+        "Error",
+        error.message,
+        [
+          {
+            text: "OK",
+            onPress: () => {
+              navigation.navigate("CityInput"); // Navigate back to CityInput screen
+            },
+          },
+        ],
+        { cancelable: false }
+      );
+    } finally {
+      setIsLoading(false);
     }
-    setIsLoading(false);
   };
 
   const fetchWeatherDataByLocation = async () => {
     setIsLoading(true);
     try {
       let { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== 'granted') {
-        throw new Error('Permission to access location was denied');
+      if (status !== "granted") {
+        throw new Error("Permission to access location was denied");
       }
 
       const location = await Location.getCurrentPositionAsync({});
       const { latitude, longitude } = location.coords;
 
-      const response = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&appid=6b54496a93f3671ad472a9370f69f850`);
+      const response = await fetch(
+        `https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&appid=6b54496a93f3671ad472a9370f69f850`
+      );
       const weatherData = await response.json();
       setWeatherData(weatherData);
 
-      const response2 = await fetch(`https://api.openweathermap.org/data/2.5/forecast?lat=${latitude}&lon=${longitude}&appid=6b54496a93f3671ad472a9370f69f850`);
+      const response2 = await fetch(
+        `https://api.openweathermap.org/data/2.5/forecast?lat=${latitude}&lon=${longitude}&appid=6b54496a93f3671ad472a9370f69f850`
+      );
       const forecastData = await response2.json();
       setForecastData(forecastData.list);
     } catch (error) {
-      console.error('Error fetching data:', error);
+      console.error("Error fetching data:", error);
     }
     setIsLoading(false);
   };
 
   const weatherDetails = weatherData
     ? [
-        { icon: 'thermometer-outline', label: 'Temperature', value: `${(weatherData.main.temp - 273.15).toFixed(2)}°C` },
-        { icon: 'cloud-outline', label: 'Weather', value: weatherData.weather[0].description },
-        { icon: 'water-outline', label: 'Humidity', value: `${weatherData.main.humidity}%` },
-        { icon: 'flag-outline', label: 'Wind Speed', value: `${weatherData.wind.speed} m/s` },
-        { icon: 'speedometer-outline', label: 'Pressure', value: `${weatherData.main.pressure} hPa` },
-        { icon: 'rainy-outline', label: 'Rain', value: weatherData.rain ? `${weatherData.rain['1h']} mm` : 'No rain' },
-        { icon: 'eye-outline', label: 'Visibility', value: `${weatherData.visibility} meters` },
-        { icon: 'cloudy-night-outline', label: 'Cloudiness', value: `${weatherData.clouds.all}%` },
+        {
+          icon: "thermometer-outline",
+          label: "Temperature",
+          value: `${(weatherData.main.temp - 273.15).toFixed(2)}°C`,
+        },
+        {
+          icon: "cloud-outline",
+          label: "Weather",
+          value: weatherData.weather[0].description,
+        },
+        {
+          icon: "water-outline",
+          label: "Humidity",
+          value: `${weatherData.main.humidity}%`,
+        },
+        {
+          icon: "flag-outline",
+          label: "Wind Speed",
+          value: `${weatherData.wind.speed} m/s`,
+        },
+        {
+          icon: "speedometer-outline",
+          label: "Pressure",
+          value: `${weatherData.main.pressure} hPa`,
+        },
+        {
+          icon: "rainy-outline",
+          label: "Rain",
+          value: weatherData.rain ? `${weatherData.rain["1h"]} mm` : "No rain",
+        },
+        {
+          icon: "eye-outline",
+          label: "Visibility",
+          value: `${weatherData.visibility} meters`,
+        },
+        {
+          icon: "cloudy-night-outline",
+          label: "Cloudiness",
+          value: `${weatherData.clouds.all}%`,
+        },
       ]
     : [];
 
-  const locationWords = weatherData ? weatherData.name.split(' ') : [];
-  const locationTop = locationWords.length > 1 ? '5%' : '10%';
+  const locationWords = weatherData ? weatherData.name.split(" ") : [];
+  const locationTop = locationWords.length > 1 ? "5%" : "10%";
 
   return (
     <View style={styles.container}>
       <StatusBar style="auto" />
-      <TouchableOpacity onPress={() => navigation.goBack()} style={styles.goBackButton}>
-        <Ionicons name="arrow-back" size={24} color="white" />
+      <TouchableOpacity
+        onPress={() => navigation.goBack()}
+        style={styles.goBackButton}
+      >
+        <Ionicons name="arrow-back" size={28} color="white"  />
       </TouchableOpacity>
 
       <IconButton
@@ -88,14 +170,18 @@ function HomeScreen({ route, navigation }) {
         color="#ffffff"
         size={30}
         style={styles.refreshButton}
-        onPress={() => (city ? fetchWeatherDataByCity(city) : fetchWeatherDataByLocation())}
+        onPress={() =>
+          city ? fetchWeatherDataByCity(city) : fetchWeatherDataByLocation()
+        }
       />
       {isLoading ? (
         <ActivityIndicator size="large" color="#0000ff" />
       ) : (
         weatherData && (
           <>
-            <Text style={[styles.locationText, { top: locationTop }]}>{weatherData.name}</Text>
+            <Text style={[styles.locationText, { top: locationTop }]}>
+              {weatherData.name}
+            </Text>
             <Card style={styles.card}>
               <Card.Content>
                 <FlatList
@@ -104,22 +190,22 @@ function HomeScreen({ route, navigation }) {
                   renderItem={({ item }) => (
                     <View style={styles.row}>
                       <Ionicons name={item.icon} size={44} color="black" />
-                      <Text style={styles.label}>
-                        {item.label}:
-                      </Text>
-                      <Text style={styles.value}>
-                        {item.value}
-                      </Text>
+                      <Text style={styles.label}>{item.label}:</Text>
+                      <Text style={styles.value}>{item.value}</Text>
                     </View>
                   )}
                   ItemSeparatorComponent={() => <View style={{ height: 10 }} />}
                   ListFooterComponent={() => (
                     <Button
                       mode="contained"
-                      onPress={() => navigation.navigate('Forecast', { forecastData })}
+                      onPress={() =>
+                        navigation.navigate("Forecast", { forecastData })
+                      }
                       style={styles.button}
                     >
-                      <Text style={styles.ButtonText}>Show 5 Day Prediction</Text>
+                      <Text style={styles.ButtonText}>
+                        Show 5 Day Prediction
+                      </Text>
                     </Button>
                   )}
                 />
@@ -135,37 +221,37 @@ function HomeScreen({ route, navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'flex-start',
-    alignItems: 'center',
-    backgroundColor: 'black',
+    justifyContent: "flex-start",
+    alignItems: "center",
+    backgroundColor: "black",
     paddingTop: 50,
   },
   locationText: {
     fontSize: 60,
-    fontWeight: 'bold',
-    color: 'white',
-    position: 'absolute',
-    left: '5%',
-    flexWrap: 'wrap',
-    textAlign: 'left',
-    width: '90%',
+    fontWeight: "bold",
+    color: "white",
+    position: "absolute",
+    left: "5%",
+    flexWrap: "wrap",
+    textAlign: "left",
+    width: "90%",
   },
   card: {
     height: height * 0.75,
-    width: '100%',
-    backgroundColor: '#879CAA',
+    width: "100%",
+    backgroundColor: "#879CAA",
     padding: 0,
     marginTop: 180,
     borderRadius: 10,
   },
   row: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: 10,
   },
   label: {
     fontSize: 27,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginLeft: 10,
   },
   value: {
@@ -174,25 +260,26 @@ const styles = StyleSheet.create({
     marginLeft: 5,
   },
   button: {
-    width: '95%',
+    width: "95%",
     marginTop: 20,
     marginBottom: 60,
     paddingVertical: 10,
     paddingHorizontal: 20,
-    alignSelf: 'center',
+    alignSelf: "center",
     borderRadius: 10,
+    backgroundColor: '#191f22'
   },
   ButtonText: {
-    color: "#000000",
+    color: "#fff",
     fontSize: 21,
   },
   refreshButton: {
-    position: 'absolute',
+    position: "absolute",
     top: 2,
     right: 10,
   },
   goBackButton: {
-    position: 'absolute',
+    position: "absolute",
     top: 10,
     left: 10,
     padding: 10,
