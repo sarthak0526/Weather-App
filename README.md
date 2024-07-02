@@ -173,7 +173,3 @@ Contributions are welcome! Please fork the repository and use a feature branch. 
 - React Native documentation
 - Expo documentation
 - OpenWeatherMap API documentation
-
----
-
-This README provides an overview of the project, installation instructions, and an outline of the app's structure and features. Adjust the repository link and any other specifics to match your actual project details.
